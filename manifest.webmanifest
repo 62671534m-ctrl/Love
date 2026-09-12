@@ -1,0 +1,26 @@
+{
+  "name": "El Rincón de Maykool y Gabriela",
+  "short_name": "El Rincón",
+  "description": "El chat secreto de Maykool y Gabriela, ahora como app.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#170b2e",
+  "theme_color": "#e193c4",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
