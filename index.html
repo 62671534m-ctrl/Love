@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=4">
+  <link rel="stylesheet" href="css/styles.css?v=5">
 </head>
 <body>
   <div class="fondo-manto" id="fondo-manto" aria-hidden="true"></div>
@@ -54,6 +54,7 @@
       <p class="cabeza-estado" id="estado">Conectad@s <span class="estado-punto"></span></p>
       <button class="icono-boton" id="btn-vaciar" aria-label="Vaciar chat" title="Vaciar chat (solo para ti)">🧹</button>
       <button class="icono-boton" id="btn-rincon" aria-label="Tu rincón" title="Tu rincón: foto, fondo y notificaciones">🎀</button>
+      <button class="icono-boton" id="btn-temas" aria-label="Temas" title="100 temas para el chat">🎨</button>
       <button class="icono-boton" id="btn-salir" aria-label="Cerrar sesión" title="Cerrar sesión">🚪</button>
       <button class="icono-boton hidden" id="btn-instalar" aria-label="Instalar app" title="Instalar El Rincón como app">📲</button>
     </header>
@@ -129,10 +130,23 @@
 
   <div id="toasts" aria-live="polite"></div>
 
+  <!-- ============ TEMAS ============ -->
+  <div class="modal-fondo hidden" id="modal-temas" role="dialog" aria-modal="true" aria-labelledby="temas-titulo">
+    <div class="modal-tarjeta temas-tarjeta">
+      <h2 class="modal-titulo" id="temas-titulo">🎨 Elige tu tema</h2>
+      <input id="temas-buscador" class="temas-buscador" type="search" placeholder="Buscar tema… (amor, dark, rosa…)" autocomplete="off" aria-label="Buscar tema">
+      <div class="temas-grilla" id="temas-grilla"></div>
+      <div class="modal-botones">
+        <button class="boton-opcion suave" id="btn-cerrar-temas" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="js/config.js?v=4"></script>
-  <script src="js/script.js?v=4"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/themes.js?v=5"></script>
+  <script src="js/script.js?v=5"></script>
 </body>
 </html>

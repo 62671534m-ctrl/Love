@@ -1,9 +1,10 @@
-var CACHE = "el-rincon-v3";
+var CACHE = "el-rincon-v4";
 var PRECACHE = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./js/config.js",
+  "./js/themes.js",
   "./js/script.js",
   "./manifest.webmanifest",
   "./icons/icon-180.png",

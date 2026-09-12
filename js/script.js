@@ -52,6 +52,11 @@
   var rinconNotif = document.getElementById("rincon-notif");
   var btnGuardarRincon = document.getElementById("btn-guardar-rincon");
   var btnCerrarRincon = document.getElementById("btn-cerrar-rincon");
+  var btnTemas = document.getElementById("btn-temas");
+  var modalTemas = document.getElementById("modal-temas");
+  var grillaTemas = document.getElementById("temas-grilla");
+  var buscadorTemas = document.getElementById("temas-buscador");
+  var btnCerrarTemas = document.getElementById("btn-cerrar-temas");
 
   var yo = localStorage.getItem(CLAVE_USUARIO);
   var escuchando = false;
@@ -70,6 +75,7 @@
   var fondoOscuridadSel = 0;
   var emojisSel = true;
   var notificacionesOn = localStorage.getItem(CLAVE_NOTIF) !== "false";
+  var temaSel = "";
 
   /* ================= fondo de corazones flotantes ================= */
   function crearFondo(cantidad) {
@@ -141,6 +147,25 @@
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  /* -------- utilidades de color para temas -------- */
+  function hexRGB(h) {
+    if (!/^#[0-9a-f]{3}$/i.test(h) && !/^#[0-9a-f]{6}$/i.test(h)) h = "#ffffff";
+    if (h.length === 4) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3];
+    return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  }
+
+  function mezcla(a, b, p) {
+    var ca = hexRGB(a), cb = hexRGB(b);
+    return "#" + [0, 1, 2].map(function (i) {
+      return Math.round(ca[i] + (cb[i] - ca[i]) * p).toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  function esOscuro(hex) {
+    var c = hexRGB(hex);
+    return (c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114) < 128;
   }
 
   function esSoloEmoji(texto) {
@@ -262,6 +287,10 @@
 
   function aplicarPrefsVista(p) {
     p = p || {};
+    if (p.tema) {
+      var t = temaPorNombre(p.tema);
+      if (t) { temaSel = p.tema; aplicarTema(t); }
+    }
     var tieneImg = !!(p.fondoImg && typeof p.fondoImg === "string" && p.fondoImg.indexOf("data:") === 0);
     mantoEl.style.backgroundImage = tieneImg ? "url(" + p.fondoImg + ")" : "none";
     mantoEl.classList.toggle("on", tieneImg);
@@ -633,6 +662,110 @@
     }
   });
 
+  /* ================= 100 temas personalizados ================= */
+  function temaPorNombre(nombre) {
+    if (!window.TEMAS) return null;
+    for (var i = 0; i < TEMAS.length; i++) if (TEMAS[i].n === nombre) return TEMAS[i];
+    return null;
+  }
+
+  function aplicarTema(t) {
+    if (!t) return;
+    var r = document.documentElement.style;
+    var superf = esOscuro(t.f1);
+    r.setProperty("--f1", t.f1);
+    r.setProperty("--f2", t.f2);
+    r.setProperty("--corazon-fondo", mezcla(t.ac, "#ffffff", 0.35));
+    r.setProperty("--rosa-50", t.f1);
+    r.setProperty("--rosa-100", t.f2);
+    r.setProperty("--rosa-200", mezcla(t.ac, "#ffffff", 0.78));
+    r.setProperty("--rosa-300", mezcla(t.ac, "#ffffff", 0.60));
+    r.setProperty("--rosa-400", mezcla(t.ac, "#ffffff", 0.25));
+    r.setProperty("--rosa-500", mezcla(t.ac, "#ffffff", 0.10));
+    r.setProperty("--rosa-600", t.ac);
+    r.setProperty("--rosa-700", mezcla(t.ac, "#000000", 0.25));
+    r.setProperty("--lavanda-100", t.f2);
+    r.setProperty("--lavanda-200", mezcla(t.f2, "#ffffff", 0.55));
+    r.setProperty("--tinta", t.tx);
+    r.setProperty("--tinta-suave", t.tx2);
+    r.setProperty("--my1", mezcla(t.my, "#ffffff", 0.20));
+    r.setProperty("--my2", mezcla(t.my, "#000000", 0.16));
+    r.setProperty("--myt", t.myt);
+    r.setProperty("--ot1", mezcla(t.ot, "#ffffff", 0.10));
+    r.setProperty("--ot2", mezcla(t.ot, "#000000", 0.04));
+    r.setProperty("--ott", t.ott);
+    r.setProperty("--superficie", superf ? "rgba(30, 22, 38, .82)" : "rgba(255, 255, 255, .92)");
+    r.setProperty("--superficie-ob", superf ? "#2a2136" : "#ffffff");
+  }
+
+  function elegirTema(nombre) {
+    var t = temaPorNombre(nombre);
+    if (!t) return;
+    temaSel = nombre;
+    aplicarTema(t);
+    var p = misPrefs() || {};
+    p.tema = nombre;
+    prefsCache[yo] = p;
+    try { localStorage.setItem(CLAVE_PREFS + yo, JSON.stringify(p)); } catch (e) { /* sin espacio */ }
+    if (refPrefs && yo) refPrefs.child(yo).update({ tema: nombre }).catch(function () { });
+    pintarTemasGrilla(buscadorTemas ? buscadorTemas.value : "");
+  }
+
+  function pintarTemasGrilla(filtro) {
+    if (!grillaTemas || !window.TEMAS) return;
+    grillaTemas.innerHTML = "";
+    var f = (filtro || "").trim().toLowerCase();
+    var lis = TEMAS;
+    if (f) lis = TEMAS.filter(function (t) { return (t.n + " " + t.e).toLowerCase().indexOf(f) !== -1; });
+    if (!lis.length) {
+      var nada = document.createElement("div");
+      nada.className = "temas-nada";
+      nada.textContent = "No encontré ese tema 💔";
+      grillaTemas.appendChild(nada);
+      return;
+    }
+    lis.forEach(function (t) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tema-tarjeta" + (t.n === temaSel ? " elegido" : "");
+      b.setAttribute("aria-label", "Tema " + t.n);
+      var m = document.createElement("span");
+      m.className = "tema-muestra";
+      m.style.background = "linear-gradient(135deg, " + t.f1 + ", " + t.f2 + ")";
+      var nm = document.createElement("span");
+      nm.textContent = t.e + " " + t.n;
+      b.appendChild(m);
+      b.appendChild(nm);
+      if (t.n === temaSel) {
+        var tick = document.createElement("span");
+        tick.className = "tema-tick";
+        tick.textContent = "✓";
+        b.appendChild(tick);
+      }
+      b.addEventListener("click", (function (nn) { return function () { elegirTema(nn); }; })(t.n));
+      grillaTemas.appendChild(b);
+    });
+  }
+
+  function abrirTemas() {
+    if (!yo) return;
+    pintarTemasGrilla(buscadorTemas ? buscadorTemas.value : "");
+    modalTemas.classList.remove("hidden");
+  }
+
+  function cerrarTemas() {
+    modalTemas.classList.add("hidden");
+  }
+
+  if (btnTemas) btnTemas.addEventListener("click", abrirTemas);
+  if (btnCerrarTemas) btnCerrarTemas.addEventListener("click", cerrarTemas);
+  if (modalTemas) modalTemas.addEventListener("click", function (e) {
+    if (e.target === modalTemas) cerrarTemas();
+  });
+  if (buscadorTemas) buscadorTemas.addEventListener("input", function () {
+    pintarTemasGrilla(this.value);
+  });
+
   /* ================= tu rincón: foto, fondo y notificaciones ================= */
   function abrirRincon() {
     if (!yo) return;
@@ -657,7 +790,8 @@
       foto: fotoSel,
       fondoImg: fondoImgSel,
       fondoOscuridad: fondoOscuridadSel,
-      emojis: emojisSel
+      emojis: emojisSel,
+      tema: temaSel || (prefsCache[yo] || {}).tema || ""
     };
     prefsCache[yo] = datos;
     try { localStorage.setItem(CLAVE_PREFS + yo, JSON.stringify(datos)); } catch (e) { /* sin espacio */ }

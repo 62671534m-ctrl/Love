@@ -1,5 +1,9 @@
 /* ============ MAYKOOL & GABRIELA — mundo rosa pastel ============ */
 :root {
+  /* tokens base (el tema actual se aplica sobre estas variables) */
+  --f1: #FFF7FA;
+  --f2: #F3EDF7;
+  --corazon-fondo: #FB9FC0;
   --rosa-50:  #FFF7FA;
   --rosa-100: #FFEFF4;
   --rosa-200: #FFDCE7;
@@ -13,6 +17,16 @@
   --tinta: #58334B;
   --tinta-suave: #9A7A8C;
   --blanco: #FFFFFF;
+  /* superficies semánticas (cambian con tema oscuro) */
+  --superficie: rgba(255, 255, 255, .92);
+  --superficie-ob: #FFFFFF;
+  /* burbujas */
+  --my1: #FB9FC0;
+  --my2: #E85D90;
+  --myt: #FFFFFF;
+  --ot1: #FFFFFF;
+  --ot2: #FFFFFF;
+  --ott: var(--tinta);
   --fuente-titulo: "Quicksand", "Segoe UI", sans-serif;
   --fuente-cuerpo: "Nunito", "Segoe UI", sans-serif;
   --sombra-suave: 0 8px 24px rgba(232, 93, 144, .18);
@@ -28,7 +42,7 @@ body {
   font-family: var(--fuente-cuerpo);
   color: var(--tinta);
   line-height: 1.5;
-  background: linear-gradient(160deg, var(--rosa-50), var(--rosa-100) 45%, var(--lavanda-100));
+  background: linear-gradient(160deg, var(--f1), var(--f2));
   overflow-x: hidden;
 }
 
@@ -65,7 +79,7 @@ body {
 .corazon-fondo {
   position: absolute;
   bottom: -10vh;
-  color: var(--rosa-400);
+  color: var(--corazon-fondo);
   animation: subir linear infinite;
   will-change: transform, opacity;
   user-select: none;
@@ -94,7 +108,7 @@ body {
   width: min(420px, 100%);
   max-width: 100%;
   min-width: 0;
-  background: rgba(255, 255, 255, .92);
+background: var(--superficie);
   border: 2px solid var(--rosa-200);
   border-radius: 32px;
   padding: 2.2rem 1.9rem 1.9rem;
@@ -166,7 +180,7 @@ body {
 
 .login-input:focus {
   outline: none;
-  background: var(--blanco);
+  background: var(--superficie-ob);
   border-color: var(--rosa-400);
   box-shadow: 0 0 0 4px rgba(244, 127, 168, .18);
 }
@@ -190,7 +204,7 @@ body {
 
 .login-error {
   margin: .9rem 0 0;
-  color: var(--rosa-700);
+  color: var(--rosa-600);
   font-weight: 800;
   font-size: .92rem;
   animation: sacudida .45s ease;
@@ -199,9 +213,9 @@ body {
 .login-nota {
   margin: 1.1rem 0 0;
   padding: .8rem 1rem;
-  font-size: .85rem;
+font-size: .85rem;
   font-weight: 600;
-  color: var(--rosa-700);
+  color: var(--tinta);
   background: var(--rosa-100);
   border: 1px dashed var(--rosa-300);
   border-radius: 16px;
@@ -235,8 +249,8 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: .35rem .6rem;
-  padding: .7rem 1rem;
-  background: rgba(255, 255, 255, .85);
+padding: .7rem 1rem;
+  background: var(--superficie);
   backdrop-filter: blur(8px);
   border-bottom: 2px solid var(--rosa-200);
   box-shadow: 0 2px 12px rgba(232, 93, 144, .10);
@@ -367,16 +381,16 @@ body {
 
 .burbuja.mia {
   align-self: flex-end;
-  background: linear-gradient(135deg, var(--rosa-400), var(--rosa-600));
-  color: var(--blanco);
+  background: linear-gradient(135deg, var(--my1), var(--my2));
+  color: var(--myt);
   border-bottom-right-radius: 6px;
   box-shadow: var(--sombra-burbuja);
 }
 
 .burbuja.suya {
   align-self: flex-start;
-  background: var(--blanco);
-  color: var(--tinta);
+  background: linear-gradient(135deg, var(--ot1), var(--ot2));
+  color: var(--ott);
   border-bottom-left-radius: 6px;
   box-shadow: var(--sombra-burbuja);
 }
@@ -386,7 +400,7 @@ body {
   font-size: 2.6rem;
   line-height: 1;
   padding: .35rem .6rem;
-  background: var(--blanco);
+  background: var(--superficie-ob);
   border: 2px solid var(--rosa-200);
   box-shadow: var(--sombra-burbuja);
 }
@@ -413,7 +427,7 @@ body {
   align-items: center;
   gap: 4px;
   padding: .7rem 1rem;
-  background: var(--blanco);
+  background: var(--superficie);
   border-radius: 20px;
   border-bottom-left-radius: 6px;
   box-shadow: var(--sombra-burbuja);
@@ -440,7 +454,7 @@ body {
 .input-caja {
   position: relative;
   padding: .7rem 1rem max(1rem, env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, .9);
+  background: var(--superficie);
   backdrop-filter: blur(8px);
   border-top: 2px solid var(--rosa-200);
 }
@@ -465,7 +479,7 @@ body {
 
 .input-texto:focus {
   outline: none;
-  background: var(--blanco);
+  background: var(--superficie-ob);
   border-color: var(--rosa-400);
   box-shadow: 0 0 0 4px rgba(244, 127, 168, .18);
 }
@@ -497,9 +511,9 @@ body {
   right: 1rem;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: .35rem;
+gap: .35rem;
   padding: .7rem;
-  background: var(--blanco);
+  background: var(--superficie-ob);
   border: 2px solid var(--rosa-200);
   border-radius: 20px;
   box-shadow: var(--sombra-suave);
@@ -594,7 +608,7 @@ html[data-fondo-img="1"] body { background: #241122; }
   text-underline-offset: 2px;
   word-break: break-all;
 }
-.burbuja.mia .burbuja-texto a { color: #fff8fb; }
+.burbuja.mia .burbuja-texto a { color: var(--myt); }
 
 /* ---- acciones en burbujas (borrar) ---- */
 .burbuja .acciones {
@@ -656,7 +670,7 @@ html[data-fondo-img="1"] body { background: #241122; }
   width: min(440px, 100%);
   max-height: 92vh;
   overflow-y: auto;
-  background: var(--blanco);
+  background: var(--superficie-ob);
   border: 2px solid var(--rosa-200);
   border-radius: 28px;
   padding: 1.5rem 1.5rem 1.3rem;
@@ -694,7 +708,7 @@ html[data-fondo-img="1"] body { background: #241122; }
 .boton-opcion:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(232, 93, 144, .4); }
 .boton-opcion:active { transform: scale(.96); }
 .boton-opcion.suave {
-  color: var(--rosa-700);
+  color: var(--tinta);
   background: var(--rosa-100);
   box-shadow: none;
 }
@@ -795,7 +809,7 @@ html[data-fondo-img="1"] body { background: #241122; }
   font-size: .9rem;
   font-weight: 800;
   color: var(--tinta);
-  background: rgba(255, 255, 255, .96);
+  background: var(--superficie-ob);
   border: 2px solid var(--rosa-300);
   border-radius: 999px;
   box-shadow: var(--sombra-suave);
@@ -806,7 +820,7 @@ html[data-fondo-img="1"] body { background: #241122; }
   text-overflow: ellipsis;
   max-width: 100%;
 }
-.toast.malo { border-color: var(--rosa-600); color: var(--rosa-700); }
+.toast.malo { border-color: var(--rosa-600); color: var(--tinta); }
 .toast.sale { animation: toast-sale .35s ease both; }
 
 @keyframes toast-entra {
@@ -815,4 +829,97 @@ html[data-fondo-img="1"] body { background: #241122; }
 }
 @keyframes toast-sale {
   to { opacity: 0; transform: translateY(-12px) scale(.9); }
+}
+
+/* ================= SELECTOR DE TEMAS ================= */
+.modal-tarjeta.temas-tarjeta {
+  width: min(560px, 100%);
+}
+
+.temas-buscador {
+  width: 100%;
+  padding: .7rem 1rem;
+  font-family: var(--fuente-cuerpo);
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--tinta);
+  background: var(--rosa-100);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  margin-bottom: .9rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.temas-buscador:focus {
+  outline: none;
+  background: var(--superficie-ob);
+  border-color: var(--rosa-400);
+}
+.temas-buscador::placeholder { color: var(--tinta-suave); }
+
+.temas-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: .55rem;
+}
+
+.tema-tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  padding: .5rem .35rem .55rem;
+  font-family: var(--fuente-titulo);
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--tinta);
+  background: transparent;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform .14s, background .15s;
+}
+.tema-tarjeta:hover { transform: translateY(-3px); background: var(--rosa-100); }
+.tema-tarjeta:active { transform: scale(.94); }
+
+.tema-muestra {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  border: 2px solid var(--rosa-300);
+  box-shadow: var(--sombra-burbuja);
+  background-position: center;
+  background-size: cover;
+}
+
+.tema-tarjeta.elegido .tema-muestra {
+  border: 3px solid var(--rosa-600);
+  box-shadow: 0 0 0 3px var(--superficie-ob), 0 0 0 5px var(--rosa-600);
+}
+.tema-tarjeta.elegido .tema-tick {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-size: .7rem;
+  color: var(--blanco);
+  background: var(--rosa-600);
+  border: 2px solid var(--superficie-ob);
+  border-radius: 50%;
+}
+
+.temas-nada {
+  padding: 1.4rem;
+  text-align: center;
+  font-weight: 800;
+  color: var(--tinta-suave);
+}
+
+@media (max-width: 480px) {
+  .temas-grilla { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+  .tema-muestra { width: 48px; height: 48px; }
+  .tema-tarjeta { font-size: .72rem; }
 }
