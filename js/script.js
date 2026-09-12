@@ -41,6 +41,12 @@
   var grabandoTiempo = document.getElementById("grabando-tiempo");
   var btnGrabarParar = document.getElementById("grabar-parar");
   var btnGrabarCancelar = document.getElementById("grabar-cancelar");
+  var btnIrUltimo = document.getElementById("btn-ir-ultimo");
+  var modalPreview = document.getElementById("modal-preview");
+  var previewTitulo = document.getElementById("preview-titulo");
+  var previewContenido = document.getElementById("preview-contenido");
+  var btnPreviewEnviar = document.getElementById("btn-preview-enviar");
+  var btnPreviewCancelar = document.getElementById("btn-preview-cancelar");
   var toastsEl = document.getElementById("toasts");
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
@@ -405,7 +411,7 @@
       texto.className = "media-marco";
       var src = esc(m.media.data);
       if (m.media.tipo === "foto") {
-        texto.innerHTML = "<img class='media-foto' src='" + src + "' alt='Foto 💕' loading='lazy'>";
+        texto.innerHTML = "<img class='media-foto' src='" + src + "' alt='Foto 💕'>";
       } else if (m.media.tipo === "video") {
         texto.innerHTML = "<video class='media-video' src='" + src + "' controls preload='metadata'></video>";
       } else if (m.media.tipo === "audio") {
@@ -468,9 +474,33 @@
   }
 
   function abajoSiCerca() {
-    var cerca = mensajesEl.scrollHeight - mensajesEl.scrollTop - mensajesEl.clientHeight < 160;
-    if (cerca) mensajesEl.scrollTop = mensajesEl.scrollHeight;
+    if (cercaDelFinal()) mensajesEl.scrollTop = mensajesEl.scrollHeight;
+    actualizarBotonAbajo();
   }
+
+  function cercaDelFinal() {
+    return mensajesEl.scrollHeight - mensajesEl.scrollTop - mensajesEl.clientHeight < 200;
+  }
+
+  function actualizarBotonAbajo() {
+    if (!btnIrUltimo) return;
+    btnIrUltimo.classList.toggle("hidden", cercaDelFinal());
+  }
+
+  function irAlUltimo(suave) {
+    if (!mensajesEl) return;
+    if (suave) {
+      mensajesEl.scrollTo({ top: mensajesEl.scrollHeight, behavior: "smooth" });
+    } else {
+      mensajesEl.style.scrollBehavior = "auto";
+      mensajesEl.scrollTop = mensajesEl.scrollHeight;
+      setTimeout(function () { mensajesEl.style.scrollBehavior = ""; }, 60);
+    }
+    actualizarBotonAbajo();
+  }
+
+  btnIrUltimo.addEventListener("click", function () { irAlUltimo(true); });
+  mensajesEl.addEventListener("scroll", actualizarBotonAbajo, { passive: true });
 
   /* ================= notificaciones ================= */
   function pedirPermisoNotif() {
@@ -686,6 +716,44 @@
   var MEDIA_MAX_VIDEO = 6 * 1024 * 1024;
   var MEDIA_MAX_AUDIO = 8 * 1024 * 1024;
 
+  /* ---------- vista previa antes de enviar (como WhatsApp) ---------- */
+  var pendienteMedia = null;
+
+  function mostrarPreview(media) {
+    if (!media || !media.tipo || !media.data) return;
+    pendienteMedia = media;
+    var etiqueta = media.tipo === "foto" ? "esta foto" : media.tipo === "video" ? "este video" : "este audio";
+    previewTitulo.textContent = "¿Enviar " + etiqueta + "?";
+    previewContenido.innerHTML = "";
+    var src = esc(media.data);
+    if (media.tipo === "foto") {
+      previewContenido.innerHTML = "<img src='" + src + "' alt='Vista previa de la foto a enviar'>";
+    } else if (media.tipo === "video") {
+      previewContenido.innerHTML = "<video src='" + src + "' controls preload='metadata'></video>";
+    } else if (media.tipo === "audio") {
+      previewContenido.innerHTML = "<audio src='" + src + "' controls></audio>";
+    }
+    if (!audioCtx) asegurarAudio();
+    modalPreview.classList.remove("hidden");
+  }
+
+  function cerrarPreview() {
+    modalPreview.classList.add("hidden");
+    pendienteMedia = null;
+    previewContenido.innerHTML = "";
+  }
+
+  btnPreviewEnviar.addEventListener("click", function () {
+    if (!pendienteMedia) return;
+    enviarMedia(pendienteMedia);
+    cerrarPreview();
+  });
+
+  btnPreviewCancelar.addEventListener("click", cerrarPreview);
+  modalPreview.addEventListener("click", function (e) {
+    if (e.target === modalPreview) cerrarPreview();
+  });
+
   btnMedia.addEventListener("click", function () {
     if (!yo) return;
     mediaPicker.classList.toggle("hidden");
@@ -714,7 +782,7 @@
     fotoDataURL(f, function (data) {
       if (!data) { toast("No pude leer esa foto 😢", true); return; }
       if (data.length > MEDIA_MAX_FOTO * 1.35) { toast("Esa foto es demasiado pesada 💔", true); return; }
-      enviarMedia({ tipo: "foto", data: data });
+      mostrarPreview({ tipo: "foto", data: data });
     });
     mediaFotoInput.value = "";
   });
@@ -725,7 +793,7 @@
     if (f.size > MEDIA_MAX_VIDEO) { toast("El video es muy pesado (máx 6 MB) 💔", true); return; }
     leerDataURL(f, function (data) {
       if (!data) { toast("No pude leer ese video 😢", true); return; }
-      enviarMedia({ tipo: "video", data: data });
+      mostrarPreview({ tipo: "video", data: data });
     });
     mediaVideoInput.value = "";
   });
@@ -758,7 +826,7 @@
         var blob = new Blob(grabaTrozos, { type: grabador.mimeType || "audio/webm" });
         if (blob.size > MEDIA_MAX_AUDIO) { toast("El audio es demasiado largo 💔", true); return; }
         leerDataURL(blob, function (data) {
-          if (data) enviarMedia({ tipo: "audio", data: data });
+          if (data) mostrarPreview({ tipo: "audio", data: data });
           else toast("No pude enviar el audio 😢", true);
         });
       };
@@ -1013,6 +1081,21 @@
       pintarAvatar("Gabriela");
       crearBarraMensajes();
       encenderListener();
+      if (refMensajes) {
+        refMensajes.once("value", function () {
+          irAlUltimo(false);
+          var reajuste = 0;
+          function reajustarAlFondo() {
+            reajuste++;
+            if (reajuste > 6) return;
+            irAlUltimo(false);
+          }
+          mensajesEl.addEventListener("load", reajustarAlFondo, true);
+          setTimeout(reajustarAlFondo, 900);
+          setTimeout(reajustarAlFondo, 2000);
+          setTimeout(function () { mensajesEl.removeEventListener("load", reajustarAlFondo, true); }, 3500);
+        });
+      }
       abajoSiCerca();
       if (notificacionesOn) registrarPush();
     });

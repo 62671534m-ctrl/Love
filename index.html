@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=7">
+  <link rel="stylesheet" href="css/styles.css?v=8">
 </head>
 <body>
   <div class="fondo-manto" id="fondo-manto" aria-hidden="true"></div>
@@ -58,7 +58,10 @@
       <button class="icono-boton hidden" id="btn-instalar" aria-label="Instalar app" title="Instalar El Rincón como app">📲</button>
     </header>
 
-    <main class="mensajes" id="mensajes"></main>
+    <div class="mensajes-wrap">
+      <main class="mensajes" id="mensajes"></main>
+      <button class="btn-ir-ultimo hidden" id="btn-ir-ultimo" aria-label="Ir al último mensaje" title="Ir al último mensaje">⬇️</button>
+    </div>
 
     <footer class="input-caja">
       <div class="emoji-picker hidden" id="emoji-picker" aria-label="Emojis para enviar"></div>
@@ -155,11 +158,24 @@
     </div>
   </div>
 
+  <!-- ============ VISTA PREVIA DE MEDIA (antes de enviar) ============ -->
+  <div class="modal-fondo hidden" id="modal-preview" role="dialog" aria-modal="true" aria-labelledby="preview-titulo">
+    <div class="modal-tarjeta preview-tarjeta">
+      <h2 class="modal-titulo" id="preview-titulo">¿Enviar este archivo?</h2>
+      <div class="preview-contenido" id="preview-contenido"></div>
+      <p class="preview-nota" id="preview-nota">¿Estás segura? Lo verá tu amor 💕</p>
+      <div class="modal-botones">
+        <button class="boton-opcion suave" id="btn-preview-cancelar" type="button">Cancelar</button>
+        <button class="boton-opcion principal" id="btn-preview-enviar" type="button">Enviar 💌</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="js/config.js?v=7"></script>
-  <script src="js/themes.js?v=7"></script>
-  <script src="js/script.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/themes.js?v=8"></script>
+  <script src="js/script.js?v=8"></script>
 </body>
 </html>
