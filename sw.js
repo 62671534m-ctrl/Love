@@ -1,4 +1,4 @@
-var CACHE = "el-rincon-v5";
+var CACHE = "el-rincon-v6";
 var PRECACHE = [
   "./",
   "./index.html",

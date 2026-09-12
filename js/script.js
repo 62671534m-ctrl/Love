@@ -27,7 +27,6 @@
   var btnEnviar = document.getElementById("btn-enviar");
   var btnEmoji = document.getElementById("btn-emoji");
   var pickerEl = document.getElementById("emoji-picker");
-  var btnVaciar = document.getElementById("btn-vaciar");
   var btnRincon = document.getElementById("btn-rincon");
   var btnSalir = document.getElementById("btn-salir");
   var btnInstalar = document.getElementById("btn-instalar");
@@ -76,10 +75,8 @@
   var db = null;
   var refMensajes = null;
   var refEscribiendo = null;
-  var refBorrados = null;
   var refPrefs = null;
   var barraMensajes = null;
-  var borradosCache = {};
   var prefsCache = {};
   var fotoSel = "";
   var fondoImgSel = "";
@@ -378,7 +375,6 @@
     var raiz = db.ref("c/" + window.SECRET_CODE);
     refMensajes = raiz.child("messages");
     refEscribiendo = raiz.child("typing");
-    refBorrados = raiz.child("deleted");
     refPrefs = raiz.child("users");
     refPush = raiz.child("push");
 
@@ -393,26 +389,6 @@
     s = s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
     s = s.replace(/(^|\s)(www\.[^\s<]+)/g, '$1<a href="https://$2" target="_blank" rel="noopener noreferrer">$2</a>');
     return s;
-  }
-
-  function acciones(key, m) {
-    var wrap = document.createElement("span");
-    wrap.className = "acciones";
-    if (m.user === yo) {
-      var bDel = document.createElement("button");
-      bDel.type = "button";
-      bDel.className = "del";
-      bDel.title = "Borrar (solo para ti)";
-      bDel.textContent = "🗑";
-      bDel.setAttribute("aria-label", "Borrar mensaje");
-      bDel.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (!confirm("¿Borrar este mensaje solo para ti? La otra persona lo seguirá viendo.")) return;
-        borrarMensaje(key, wrap.parentNode);
-      });
-      wrap.appendChild(bDel);
-    }
-    return wrap;
   }
 
   function hacerBurbuja(key, m) {
@@ -450,7 +426,6 @@
 
     burbuja.appendChild(texto);
     burbuja.appendChild(hora);
-    burbuja.appendChild(acciones(key, m));
     return burbuja;
   }
 
@@ -470,7 +445,6 @@
   function agregarMensaje(key, m) {
     if (!m || !m.user) return;
     if (!m.texto && !(m.media && m.media.tipo && m.media.data)) return;
-    if (borradoParaMi(key, m)) return;
     if (document.querySelector('[data-key="' + key + '"]')) return;
     if (!barraMensajes) crearBarraMensajes();
 
@@ -496,40 +470,6 @@
   function abajoSiCerca() {
     var cerca = mensajesEl.scrollHeight - mensajesEl.scrollTop - mensajesEl.clientHeight < 160;
     if (cerca) mensajesEl.scrollTop = mensajesEl.scrollHeight;
-  }
-
-  /* ================= borrado solo para mí ================= */
-  function borradoParaMi(key, m) {
-    var me = borradosCache || {};
-    if (me.__all && (m.tiempo || 0) <= +me.__all) return true;
-    if (me[key]) return true;
-    return false;
-  }
-
-  function borrarMensaje(key, nodo) {
-    if (!refBorrados) return;
-    refBorrados.child(yo).child(key).set(true);
-    if (nodo && nodo.parentNode) nodo.parentNode.removeChild(nodo);
-    vacioSiAplica();
-  }
-
-  function observarBorrados() {
-    refBorrados.child(yo).on("value", function (snap) {
-      borradosCache = snap.val() || {};
-      aplicarBorrados();
-    });
-  }
-
-  function aplicarBorrados() {
-    if (!barraMensajes) return;
-    var me = borradosCache || {};
-    barraMensajes.querySelectorAll("[data-key]").forEach(function (n) {
-      var k = n.getAttribute("data-key");
-      var t = +(n.getAttribute("data-t") || 0);
-      if (me.__all && t <= +me.__all) n.remove();
-      else if (me[k]) n.remove();
-    });
-    vacioSiAplica();
   }
 
   /* ================= notificaciones ================= */
@@ -1059,17 +999,6 @@
     }
   });
 
-  /* ================= vaciar chat ================= */
-  btnVaciar.addEventListener("click", function () {
-    if (!yo || !refBorrados) return;
-    if (!confirm("¿Vaciar el chat solo para ti? La otra persona seguirá viendo todos los mensajes. 💔")) return;
-    var ahora = Date.now();
-    refBorrados.child(yo).child("__all").set(ahora);
-    borradosCache.__all = ahora;
-    aplicarBorrados();
-    toast("Chat vaciado para ti 🧹");
-  });
-
   /* ================= entrar al chat ================= */
   function entrar(nombre) {
     yo = canonicalizar(nombre);
@@ -1083,7 +1012,6 @@
       pintarAvatar("Maykool");
       pintarAvatar("Gabriela");
       crearBarraMensajes();
-      observarBorrados();
       encenderListener();
       abajoSiCerca();
       if (notificacionesOn) registrarPush();
@@ -1160,7 +1088,6 @@
       refEscribiendo.off();
       escuchando = false;
     }
-    if (refBorrados && yo) refBorrados.child(yo).off();
     if (refPrefs) {
       refPrefs.child(yo).off();
       refPrefs.child(elOtro()).off();
