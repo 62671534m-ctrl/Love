@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=5">
+  <link rel="stylesheet" href="css/styles.css?v=6">
 </head>
 <body>
   <div class="fondo-manto" id="fondo-manto" aria-hidden="true"></div>
@@ -64,11 +64,25 @@
     <footer class="input-caja">
       <div class="emoji-picker hidden" id="emoji-picker" aria-label="Emojis para enviar"></div>
       <div class="input-linea">
+        <div class="media-picker hidden" id="media-picker" aria-label="Enviar foto, video o audio">
+          <button type="button" id="media-foto" aria-label="Enviar foto">📷<span>Foto</span></button>
+          <button type="button" id="media-video" aria-label="Enviar video">🎥<span>Video</span></button>
+          <button type="button" id="media-audio" aria-label="Grabar audio">🎤<span>Audio</span></button>
+        </div>
+        <div class="media-grabando hidden" id="media-grabando" aria-label="Grabando audio">
+          <span class="grabando-punto" aria-hidden="true"></span>
+          <span class="grabando-txt">Grabando… <b id="grabando-tiempo">0:00</b></span>
+          <button type="button" class="icono-boton" id="grabar-parar" aria-label="Detener y enviar audio">⏹️</button>
+          <button type="button" class="icono-boton" id="grabar-cancelar" aria-label="Cancelar grabación">✖️</button>
+        </div>
+        <button class="icono-boton" id="btn-media" aria-label="Enviar foto, video o audio" title="Enviar foto, video o audio">📎</button>
         <button class="icono-boton" id="btn-emoji" aria-label="Elegir emoji" title="Emojis">😍</button>
         <input id="input-texto" class="input-texto" type="text" maxlength="500"
                placeholder="Escribe algo bonito..." aria-label="Tu mensaje">
         <button class="enviar-boton" id="btn-enviar" aria-label="Enviar mensaje" title="Enviar">💌</button>
       </div>
+      <input type="file" id="media-foto-input" accept="image/*" hidden>
+      <input type="file" id="media-video-input" accept="video/*" hidden>
     </footer>
   </section>
 
@@ -145,8 +159,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="js/config.js?v=5"></script>
-  <script src="js/themes.js?v=5"></script>
-  <script src="js/script.js?v=5"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/themes.js?v=6"></script>
+  <script src="js/script.js?v=6"></script>
 </body>
 </html>

@@ -31,6 +31,17 @@
   var btnRincon = document.getElementById("btn-rincon");
   var btnSalir = document.getElementById("btn-salir");
   var btnInstalar = document.getElementById("btn-instalar");
+  var btnMedia = document.getElementById("btn-media");
+  var mediaPicker = document.getElementById("media-picker");
+  var btnMediaFoto = document.getElementById("media-foto");
+  var btnMediaVideo = document.getElementById("media-video");
+  var btnMediaAudio = document.getElementById("media-audio");
+  var mediaFotoInput = document.getElementById("media-foto-input");
+  var mediaVideoInput = document.getElementById("media-video-input");
+  var grabandoEl = document.getElementById("media-grabando");
+  var grabandoTiempo = document.getElementById("grabando-tiempo");
+  var btnGrabarParar = document.getElementById("grabar-parar");
+  var btnGrabarCancelar = document.getElementById("grabar-cancelar");
   var toastsEl = document.getElementById("toasts");
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
@@ -166,6 +177,17 @@
   function esOscuro(hex) {
     var c = hexRGB(hex);
     return (c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114) < 128;
+  }
+
+  /* -------- resúmenes para notificaciones -------- */
+  function mediaResumen(m) {
+    if (m && m.media && m.media.tipo) {
+      return m.media.tipo === "foto" ? "📷 Foto" : m.media.tipo === "video" ? "🎥 Video" : m.media.tipo === "audio" ? "🎤 Audio" : "📎 Archivo";
+    }
+    return null;
+  }
+  function cuerpoCorto(m) {
+    return mediaResumen(m) || (m && m.texto ? m.texto.slice(0, 160) : "");
   }
 
   function esSoloEmoji(texto) {
@@ -399,11 +421,23 @@
     burbuja.className = "burbuja " + (mia ? "mia" : "suya");
     burbuja.dataset.key = key;
     burbuja.dataset.t = m.tiempo || 0;
-    if (esSoloEmoji(m.texto)) burbuja.classList.add("emoji-mensaje");
+    if (m.media && m.media.tipo && m.media.data) burbuja.classList.add("media-mensaje", "media-" + m.media.tipo);
 
     var texto = document.createElement("div");
     texto.className = "burbuja-texto";
-    if (esSoloEmoji(m.texto)) {
+    if (m.media && m.media.tipo && m.media.data) {
+      texto.className = "media-marco";
+      var src = esc(m.media.data);
+      if (m.media.tipo === "foto") {
+        texto.innerHTML = "<img class='media-foto' src='" + src + "' alt='Foto 💕' loading='lazy'>";
+      } else if (m.media.tipo === "video") {
+        texto.innerHTML = "<video class='media-video' src='" + src + "' controls preload='metadata'></video>";
+      } else if (m.media.tipo === "audio") {
+        texto.innerHTML = "<audio class='media-audio' src='" + src + "' controls preload='metadata'></audio>";
+      } else {
+        texto.innerHTML = "";
+      }
+    } else if (esSoloEmoji(m.texto)) {
       texto.textContent = m.texto;
     } else {
       texto.innerHTML = linkificar(m.texto);
@@ -434,7 +468,8 @@
   }
 
   function agregarMensaje(key, m) {
-    if (!m || !m.user || !m.texto) return;
+    if (!m || !m.user) return;
+    if (!m.texto && !(m.media && m.media.tipo && m.media.data)) return;
     if (borradoParaMi(key, m)) return;
     if (document.querySelector('[data-key="' + key + '"]')) return;
     if (!barraMensajes) crearBarraMensajes();
@@ -524,7 +559,7 @@
     try {
       var foto = avatarUrl(m.user);
       var n = new Notification("💌 " + m.user, {
-        body: (m.texto || "").slice(0, 160),
+        body: cuerpoCorto(m),
         icon: foto || undefined,
         tag: "mg-rincon"
       });
@@ -578,9 +613,9 @@
       agregarMensaje(snap.key, m);
       if (m && m.user !== yo) {
         sonidoRecibir();
-        toast("💌 " + m.user + ": " + (esSoloEmoji(m.texto) ? m.texto : m.texto.slice(0, 80)));
+        toast("💌 " + m.user + ": " + cuerpoCorto(m));
         if (notificacionesOn && (document.hidden || !document.hasFocus())) notificar(m);
-        if (document.hidden) titular("💌 " + m.user + " te escribió");
+        if (document.hidden) titular("💌 " + m.user + " te envió " + (mediaResumen(m) || "un mensaje"));
       }
     });
 
@@ -652,15 +687,172 @@
 
   btnEmoji.addEventListener("click", function () {
     pickerEl.classList.toggle("hidden");
+    mediaPicker.classList.add("hidden");
     if (!pickerEl.classList.contains("hidden") && !audioCtx) asegurarAudio();
   });
 
   document.addEventListener("click", function (e) {
     if (!pickerEl.classList.contains("hidden") &&
-        !pickerEl.contains(e.target) && e.target !== btnEmoji) {
+        !pickerEl.contains(e.target) && e.target !== btnEmoji && e.target !== btnMedia) {
       pickerEl.classList.add("hidden");
     }
+    if (!mediaPicker.classList.contains("hidden") &&
+        !mediaPicker.contains(e.target) && e.target !== btnMedia && e.target !== btnEmoji) {
+      mediaPicker.classList.add("hidden");
+    }
   });
+
+  /* ================= enviar foto, video y audio ================= */
+  function fotoDataURL(file, cb) {
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function () {
+      var r = Math.min(1, 1400 / Math.max(img.width, img.height));
+      var w = Math.max(1, Math.round(img.width * r));
+      var h = Math.max(1, Math.round(img.height * r));
+      var cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      var ctx = cv.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      try { cb(cv.toDataURL("image/jpeg", 0.85)); } catch (e) { cb(null); }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
+    img.src = url;
+  }
+
+  function leerDataURL(blob, cb) {
+    var r = new FileReader();
+    r.onload = function () { cb(r.result); };
+    r.onerror = function () { cb(null); };
+    r.readAsDataURL(blob);
+  }
+
+  function enviarMedia(media) {
+    if (!yo || !refMensajes || !media || !media.tipo || !media.data || !media.data.length) return;
+    asegurarAudio();
+    refMensajes.push({ user: yo, tiempo: Date.now(), media: { tipo: media.tipo, data: media.data } }).then(function () {
+      estadoConectados();
+    });
+    sonidoEnviar();
+    corazonVuela(btnEnviar);
+    abajoSiCerca();
+  }
+
+  var MEDIA_MAX_FOTO = 3.5 * 1024 * 1024;
+  var MEDIA_MAX_VIDEO = 6 * 1024 * 1024;
+  var MEDIA_MAX_AUDIO = 8 * 1024 * 1024;
+
+  btnMedia.addEventListener("click", function () {
+    if (!yo) return;
+    mediaPicker.classList.toggle("hidden");
+    pickerEl.classList.add("hidden");
+    if (!mediaPicker.classList.contains("hidden") && !audioCtx) asegurarAudio();
+  });
+
+  btnMediaFoto.addEventListener("click", function () {
+    mediaPicker.classList.add("hidden");
+    mediaFotoInput.click();
+  });
+
+  btnMediaVideo.addEventListener("click", function () {
+    mediaPicker.classList.add("hidden");
+    mediaVideoInput.click();
+  });
+
+  btnMediaAudio.addEventListener("click", function () {
+    mediaPicker.classList.add("hidden");
+    iniciarGrabacion();
+  });
+
+  mediaFotoInput.addEventListener("change", function () {
+    var f = mediaFotoInput.files && mediaFotoInput.files[0];
+    if (!f) return;
+    fotoDataURL(f, function (data) {
+      if (!data) { toast("No pude leer esa foto 😢", true); return; }
+      if (data.length > MEDIA_MAX_FOTO * 1.35) { toast("Esa foto es demasiado pesada 💔", true); return; }
+      enviarMedia({ tipo: "foto", data: data });
+    });
+    mediaFotoInput.value = "";
+  });
+
+  mediaVideoInput.addEventListener("change", function () {
+    var f = mediaVideoInput.files && mediaVideoInput.files[0];
+    if (!f) return;
+    if (f.size > MEDIA_MAX_VIDEO) { toast("El video es muy pesado (máx 6 MB) 💔", true); return; }
+    leerDataURL(f, function (data) {
+      if (!data) { toast("No pude leer ese video 😢", true); return; }
+      enviarMedia({ tipo: "video", data: data });
+    });
+    mediaVideoInput.value = "";
+  });
+
+  /* ---------- grabación de audio ---------- */
+  var grabador = null;
+  var grabadoraStream = null;
+  var grabaTrozos = [];
+  var grabaIntervalo = null;
+
+  function ocultarGrabando() {
+    if (grabaIntervalo) { clearInterval(grabaIntervalo); grabaIntervalo = null; }
+    grabandoEl.classList.add("hidden");
+  }
+
+  function iniciarGrabacion() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      toast("Tu navegador no puede grabar audio 🎤", true);
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      grabadoraStream = stream;
+      grabador = new MediaRecorder(stream);
+      grabaTrozos = [];
+      grabador.ondataavailable = function (ev) { if (ev.data && ev.data.size) grabaTrozos.push(ev.data); };
+      grabador.onstop = function () {
+        if (grabadoraStream) { grabadoraStream.getTracks().forEach(function (t) { t.stop(); }); grabadoraStream = null; }
+        ocultarGrabando();
+        if (!grabaTrozos.length) { toast("No se grabó nada 🎤"); return; }
+        var blob = new Blob(grabaTrozos, { type: grabador.mimeType || "audio/webm" });
+        if (blob.size > MEDIA_MAX_AUDIO) { toast("El audio es demasiado largo 💔", true); return; }
+        leerDataURL(blob, function (data) {
+          if (data) enviarMedia({ tipo: "audio", data: data });
+          else toast("No pude enviar el audio 😢", true);
+        });
+      };
+      grabador.start();
+      grabandoEl.classList.remove("hidden");
+      grabandoTiempo.textContent = "0:00";
+      var secs = 0;
+      grabaIntervalo = setInterval(function () {
+        secs++;
+        grabandoTiempo.textContent = Math.floor(secs / 60) + ":" + (secs % 60 < 10 ? "0" : "") + (secs % 60);
+        if (secs >= 60) pararGrabacion();
+      }, 1000);
+    }).catch(function () {
+      toast("Sin permiso para el micrófono 🎤", true);
+    });
+  }
+
+  function pararGrabacion() {
+    if (grabador && grabador.state !== "inactive") { try { grabador.stop(); } catch (e) { } }
+  }
+
+  function cancelarGrabacion() {
+    if (grabador) {
+      grabador.onstop = null;
+      try { if (grabador.state !== "inactive") grabador.stop(); } catch (e) { }
+      grabador = null;
+    }
+    if (grabadoraStream) { grabadoraStream.getTracks().forEach(function (t) { t.stop(); }); grabadoraStream = null; }
+    ocultarGrabando();
+    toast("Grabación cancelada 🎤");
+  }
+
+  btnGrabarParar.addEventListener("click", pararGrabacion);
+  btnGrabarCancelar.addEventListener("click", cancelarGrabacion);
 
   /* ================= 100 temas personalizados ================= */
   function temaPorNombre(nombre) {

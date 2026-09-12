@@ -533,6 +533,103 @@ gap: .35rem;
 .emoji-picker button:hover { transform: scale(1.35) rotate(-8deg); background: var(--rosa-100); }
 .emoji-picker button:active { transform: scale(.9); }
 
+/* ---- selección de medios (📎) ---- */
+.media-picker {
+  position: absolute;
+  bottom: calc(100% + .5rem);
+  left: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .45rem;
+  padding: .7rem;
+  background: var(--superficie-ob);
+  border: 2px solid var(--rosa-200);
+  border-radius: 20px;
+  box-shadow: var(--sombra-suave);
+  animation: tarjeta-entra .3s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.media-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+  padding: .55rem .8rem;
+  font-family: var(--fuente-titulo);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--tinta);
+  background: var(--rosa-100);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform .12s, background .15s;
+}
+.media-picker button:hover { transform: translateY(-3px); background: var(--rosa-200); }
+.media-picker button:active { transform: scale(.93); }
+.media-picker button .emoji { font-size: 1.35rem; }
+
+/* ---- barra de grabación de audio ---- */
+.media-grabando {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem .8rem;
+  background: var(--superficie-ob);
+  border: 2px solid var(--rosa-600);
+  border-radius: 999px;
+  box-shadow: var(--sombra-suave);
+  animation: tarjeta-entra .25s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.media-grabando .grabando-punto {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--rosa-600);
+  animation: latido-rojo 1s ease-in-out infinite;
+}
+.media-grabando .grabando-txt {
+  flex: 1;
+  font-weight: 800;
+  color: var(--tinta);
+  font-size: .92rem;
+}
+.media-grabando .grabando-txt b { color: var(--rosa-600); font-variant-numeric: tabular-nums; }
+@keyframes latido-rojo {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.8); }
+}
+
+/* ---- burbujas con medios ---- */
+.media-marco { line-height: 0; }
+.burbuja .media-foto {
+  display: block;
+  max-width: min(100%, 380px);
+  max-height: 340px;
+  border-radius: 14px;
+  object-fit: cover;
+  line-height: 0;
+}
+.burbuja .media-video {
+  display: block;
+  max-width: min(100%, 380px);
+  max-height: 340px;
+  border-radius: 14px;
+  line-height: 0;
+}
+.burbuja .media-audio {
+  display: block;
+  width: min(260px, 100%);
+  height: 42px;
+  vertical-align: middle;
+}
+.burbuja.media-audio { padding: .4rem .5rem; }
+.burbuja.media-audio .burbuja-hora { text-align: left; }
+.burbuja.media-mensaje { overflow: hidden; }
+@media (max-width: 480px) {
+  .burbuja .media-foto, .burbuja .media-video { max-width: 100%; }
+  .burbuja .media-audio { width: 100%; }
+}
+
 /* ================= CORAZÓN QUE VUELA AL ENVIAR ================= */
 .corazon-enviado {
   position: fixed;
