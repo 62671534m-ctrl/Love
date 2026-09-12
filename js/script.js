@@ -47,6 +47,10 @@
   var previewContenido = document.getElementById("preview-contenido");
   var btnPreviewEnviar = document.getElementById("btn-preview-enviar");
   var btnPreviewCancelar = document.getElementById("btn-preview-cancelar");
+  var modalFoto = document.getElementById("modal-foto");
+  var fotoGrandeImg = document.getElementById("foto-grande-img");
+  var btnFotoCerrar = document.getElementById("foto-grande-cerrar");
+  var btnFotoDescargar = document.getElementById("foto-grande-descargar");
   var toastsEl = document.getElementById("toasts");
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
@@ -752,6 +756,49 @@
   btnPreviewCancelar.addEventListener("click", cerrarPreview);
   modalPreview.addEventListener("click", function (e) {
     if (e.target === modalPreview) cerrarPreview();
+  });
+
+  /* ---------- foto en grande (clic para agrandar + descargar) ---------- */
+  function abrirFotoGrande(src) {
+    if (!src || !modalFoto) return;
+    fotoGrandeImg.src = src;
+    modalFoto.classList.remove("hidden");
+  }
+
+  function cerrarFotoGrande() {
+    if (!modalFoto) return;
+    modalFoto.classList.add("hidden");
+    fotoGrandeImg.src = "";
+  }
+
+  mensajesEl.addEventListener("click", function (e) {
+    var img = e.target;
+    if (img && img.classList && img.classList.contains("media-foto") && img.src) {
+      abrirFotoGrande(img.currentSrc || img.src);
+    }
+  });
+
+  btnFotoCerrar.addEventListener("click", cerrarFotoGrande);
+  btnFotoDescargar.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!fotoGrandeImg.src) return;
+    var a = document.createElement("a");
+    var d = new Date();
+    var mes = ("0" + (d.getMonth() + 1)).slice(-2);
+    var dia = ("0" + d.getDate()).slice(-2);
+    var hora = ("0" + d.getHours()).slice(-2);
+    var min = ("0" + d.getMinutes()).slice(-2);
+    a.href = fotoGrandeImg.src;
+    a.download = "rincon-foto-" + d.getFullYear() + "-" + mes + "-" + dia + "-" + hora + min + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+  modalFoto.addEventListener("click", function (e) {
+    if (e.target === modalFoto || e.target === fotoGrandeImg) cerrarFotoGrande();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && modalFoto && !modalFoto.classList.contains("hidden")) cerrarFotoGrande();
   });
 
   btnMedia.addEventListener("click", function () {
