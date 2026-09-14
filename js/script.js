@@ -80,6 +80,7 @@
 
   var yo = localStorage.getItem(CLAVE_USUARIO);
   var escuchando = false;
+  var historialEnEspera = true;
   var typingTimer = null;
   var tituloParpadeo = false;
   var db = null;
@@ -581,11 +582,12 @@
   function encenderListener() {
     if (escuchando || !refMensajes) return;
     escuchando = true;
+    historialEnEspera = true;
 
     refMensajes.on("child_added", function (snap) {
       var m = snap.val();
       agregarMensaje(snap.key, m);
-      if (m && m.user !== yo) {
+      if (m && m.user !== yo && !historialEnEspera) {
         sonidoRecibir();
         toast("💌 " + m.user + ": " + cuerpoCorto(m));
         if (notificacionesOn && (document.hidden || !document.hasFocus())) notificar(m);
@@ -1130,6 +1132,7 @@
       encenderListener();
       if (refMensajes) {
         refMensajes.once("value", function () {
+          historialEnEspera = false;
           irAlUltimo(false);
           var reajuste = 0;
           function reajustarAlFondo() {
